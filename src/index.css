@@ -7,7 +7,7 @@
     --sideBarHover: #DFF1F6;
 }
 
-*, *::before {
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -23,7 +23,6 @@ body {
     'sidebar list-container ';
 }
 
-
 #header-container {
     grid-column: 1/3;
     background-color: pink;
@@ -34,10 +33,7 @@ body {
     background-color: var(--headerColor);
 }
 
-.flex-header {
-    margin-top: 8px;
-}
-
+.flex-header {margin-top: 8px;}
 
 #flex-header1 {
     font-family: 'Old Standard TT', serif;
@@ -141,7 +137,53 @@ button:hover {
 
 #list-subcontainer {
     width: 80%;
-    height: 20px;
-    background-color: rebeccapurple;
-    margin: 70px auto;
+    height: 90%;
+    margin: 50px auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 50px 1fr;
+    overflow: auto;
+}
+
+#task-header {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer; 
+}
+
+#home {
+    font-size: 22px;
+    margin-left: 10px;
+}
+
+#due-date {
+    position: relative;
+    top: 2px;
+    margin-right: 100px;
+}
+
+#main-content {
+}
+
+#arrow {margin-left: 5px}
+
+.addTask-container {
+    list-style-type: none;
+    border-top: 1px solid var(--bttnLightShade);
+    border-bottom: 1px solid var(--bttnLightShade);
+    padding: 5px;
+    opacity: .5;
+    cursor: pointer;
+}
+
+.addTask-container:hover {
+    opacity: 1;
+}
+
+#addTask-text {
+    position: relative;
+    bottom: 3px;
+    left: 8px;
 }
