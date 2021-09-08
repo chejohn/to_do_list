@@ -1,0 +1,147 @@
+
+:root {
+    font-family: 'Roboto', sans-serif;
+    --bttnLightShade: #DFF1F6;
+    --headerColor: #6DC0D5;
+    --sideBarColor: #EFF8FB;
+    --sideBarHover: #DFF1F6;
+}
+
+*, *::before {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    grid-template-rows: 55px 1fr;
+    grid-template-areas: 
+    'header-container header-container'
+    'sidebar list-container ';
+}
+
+
+#header-container {
+    grid-column: 1/3;
+    background-color: pink;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--headerColor);
+}
+
+.flex-header {
+    margin-top: 8px;
+}
+
+
+#flex-header1 {
+    font-family: 'Old Standard TT', serif;
+    font-size: 25px;
+    margin-left: 35px;
+}
+
+#flex-header2 {
+    margin-right: 20px;
+}
+
+#to-do {
+    margin-left: 10px;
+    position: relative;
+    bottom: 10px;
+    color: white;
+}
+
+#greeting {
+    margin-right: 15px;
+}
+
+button {
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    border-radius: 25px;
+    padding: 10px 15px 10px 15px;
+    border: none;
+    background-color: var(--bttnLightShade);
+    transition: 0.2s ease;
+}
+
+button:hover {
+    transform: scale(1.1);
+}  
+
+#sidebar {
+   background-color: var(--sideBarColor);
+}
+
+#tab-container {
+    width: 70%;
+    position: relative;
+    top: 35px;
+    left: 40px;
+}
+
+.tab {
+    padding: 5px;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 25px;
+}
+
+.tab:hover:not(#project-tab), .projects:hover {
+    background-color: var(--sideBarHover);
+    cursor: pointer;
+}
+
+#project-container {
+    height: 200px;
+    overflow: scroll;
+    font-size: 18px;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+.projects {
+    padding: 8px;
+    margin-bottom: 5px;
+    width: 90%;
+    white-space: nowrap;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--headerColor);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--sideBarHover);
+    border-radius: 5px;
+} 
+
+.chore-count {
+    font-size: 12px;
+    background-color: var(--headerColor);
+    padding: 1px 5px;
+    margin-right: 5px;
+    border-radius: 50%;
+    position: relative;
+    bottom: 3px;
+    font-weight: bold;
+}
+
+#list-subcontainer {
+    width: 80%;
+    height: 20px;
+    background-color: rebeccapurple;
+    margin: 70px auto;
+}
