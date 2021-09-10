@@ -11,7 +11,7 @@
         <title>To Do List</title>
     </head>
     <body>
-        <div id = 'header-container'>
+        <header id = 'header-container'>
             <div id = 'flex-header1' class = 'flex-header'>
                 <img src = '../src/images/cubeLogo.png' width = '40'>
                 <span id = 'to-do'>To-Do...</span>
@@ -20,8 +20,8 @@
                 <span id = 'greeting'>Hello, chejohn16@gmail.com</span>
                 <button>Sign Out</button>
             </div>
-        </div>
-        <div id = 'sidebar'>
+        </header>
+        <aside id = 'sidebar'>
             <div id = 'tab-container'>
                 <div class = 'tab'>Home</div>
                 <div class = 'tab'>Today</div>
@@ -50,8 +50,8 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div id = 'list-container'>
+        </aside>
+        <main id = 'list-container'>
             <div id = list-subcontainer>
                 <div id = 'task-header'>
                     <span id = 'home'>Home</span>
@@ -69,12 +69,26 @@
                             <img src = '../src/images/deleteIcon.svg' width = '15' id = 'trash'>
                         </div>
                     </li>
-                    <li class = 'addTask-container'>
+                    <!-- <li class = 'addTask-container'>
                         <img src = '../src/images/addIcon.svg' width = '20'> 
                         <span id = 'addTask-text'>Add Task</span>
-                    </li>
+                    </li> -->
+                    <div id = 'list-form-container'>
+                        <form id = 'list-form'>
+                            <input type = 'text' placeholder='Title: Laundry' class = 'form-control1'>
+                            <textarea placeholder= 'Details: e.g. fold laundry at 4pm' class = 'form-control1'></textarea>
+                            <div id = 'form-control2-container'>
+                                <input type = 'date' class = 'form-control2'>
+                                <input type = 'text' placeholder= 'Project Name' class = 'form-control2'>   
+                            </div>
+                        </form>
+                        <div id = 'check-cancel-container'>
+                            <img src = '../src/images/checkmark.svg' width = '30' id = 'checkmarkIcon'>
+                            <img src = '../src/images/cancelIcon.svg' width = '30' id = 'cancelIcon'>
+                        </div>
+                    </div>
                 </ul>
             </div>
-        </div>
+        </main>
     </body>
 </html>
