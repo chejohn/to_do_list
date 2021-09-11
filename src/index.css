@@ -210,11 +210,14 @@ button:hover {transform: scale(1.1);}
     height: 250px;
 }
 
+#list-form, .summary {
+    border-radius: 15px;
+    border: 1px solid var(--headerColor);
+}
+
 #list-form {
     margin: 10px;
     height: 150px;
-    border-radius: 15px;
-    border: 1px solid var(--headerColor);
     position: relative;
 }
 
@@ -263,3 +266,34 @@ textarea {
 #cancelIcon {margin-left: 5px;}
 
 #cancelIcon:hover, #checkmarkIcon:hover {transform: scale(1.1);}
+
+.summary-container {
+    position: fixed;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.summary {
+    position: absolute;
+    top: 200px;
+    left: 250px;
+    width: 50%;
+    padding: 15px;
+    background: white;
+}
+
+.summary-title {font-size: 25px;}
+
+.summary-subcontainer {
+    margin-top: 10px;
+    line-height: 2;
+}
+
+.summary-details {
+    line-height: 1.5;
+    margin-left: 20px;
+    height: 50px;
+    overflow: auto;
+}
