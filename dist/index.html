@@ -7,13 +7,15 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:wght@700&family=Roboto&display=swap" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src = 'main.js'></script>
+        <script defer src = 'main.js'></script>
         <title>To Do List</title>
     </head>
     <body>
         <!-- <div class = 'summary-container'>
             <div class = 'summary'>
-                <h5 class = 'summary-content summary-title'>Demo Test</h5>
+                <h5 class = 'summary-content summary-title'>Demo Test  
+                    <img src = '../src/images/closePopIcon.svg' alt = '' width= '20' class= 'close-popUp-icon'>
+                </h5>
                 <div class = 'summary-subcontainer'>
                     <p class = 'summary-content'>Due: 9/20/2020</p>
                     <p class = 'summary-content'>Project: Chores</p>
@@ -66,36 +68,36 @@
             <div id = list-subcontainer>
                 <div id = 'task-header'>
                     <span id = 'home'>Home</span>
-                    <span id = 'due-date'>Due Date<img src = '../src/images/arrowIcon.svg' width = '10' id = 'arrow' alt = 'arrow icon'></span>
+                    <span id = 'due-date'>Due Date<img src = '../src/images/arrowIcon.svg' width = '10' id = 'arrow' alt = ''></span>
                 </div>
                 <ul id = main-content>
-                    <li class = 'list-item'>
+                    <!-- <li class = 'list-item'>
                         <div>
                             <input type = 'checkbox' class = 'checkbox'>
                             <span>Demo Test</span>
                         </div>
                         <div>
                             <span id = 'date'>9/20/2021</span>
-                            <img src = '../src/images/editIcon.svg' width = '15' id = 'edit' alt = 'edit icon'>
-                            <img src = '../src/images/deleteIcon.svg' width = '15' id = 'trash' alt = 'trash icon'>
+                            <img src = '../src/images/editIcon.svg' width = '15' id = 'edit' alt = ''>
+                            <img src = '../src/images/deleteIcon.svg' width = '15' id = 'trash' alt = ''>
                         </div>
-                    </li>
-                    <!-- <li class = 'addTask-container'>
-                        <img src = '../src/images/addIcon.svg' width = '20' alt = 'add icon'> 
-                        <span id = 'addTask-text'>Add Task</span>
                     </li> -->
+                    <li class = 'addTask-container'>
+                        <img src = '../src/images/addIcon.svg' width = '20' alt = ''> 
+                        <span id = 'addTask-text'>Add Task</span>
+                    </li>
                     <div id = 'list-form-container'>
                         <form id = 'list-form'>
-                            <input type = 'text' placeholder='Title: Laundry' class = 'form-control1' maxlength='40'>
-                            <textarea placeholder= 'Details: e.g. fold laundry at 4pm' class = 'form-control1'></textarea>
+                            <input type = 'text' placeholder='Title: Laundry' class = 'form-control1' id = 'task-title' maxlength='40'>
+                            <textarea placeholder= 'Details: e.g. fold laundry at 4pm' class = 'form-control1' id = 'task-details'></textarea>
                             <div id = 'form-control2-container'>
-                                <input type = 'date' class = 'form-control2'>
-                                <input type = 'text' placeholder= 'Project Name' class = 'form-control2'>   
+                                <input type = 'date' class = 'form-control2' id = 'task-date'>
+                                <input type = 'text' placeholder= 'Project Name' class = 'form-control2' id = 'task-project-name'>   
                             </div>
                         </form>
                         <div id = 'check-cancel-container'>
-                            <img src = '../src/images/checkmark.svg' width = '30' id = 'checkmarkIcon' alt = 'check icon'>
-                            <img src = '../src/images/cancelIcon.svg' width = '30' id = 'cancelIcon' alt = 'cancel icon'>
+                            <img src = '../src/images/checkmark.svg' width = '30' id = 'checkmarkIcon' alt = ''>
+                            <img src = '../src/images/cancelIcon.svg' width = '30' id = 'cancelIcon' alt = ''>
                         </div>
                     </div>
                 </ul>
