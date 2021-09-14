@@ -1,26 +1,30 @@
 
+import {isToday, parseISO, isThisWeek} from 'date-fns';
 
 const MakeListItem = (dueDate, taskName, taskDetails, projectName) => {
-    this.dueDate = dueDate;
-    this.taskName = taskName;
-    this.taskDetails = taskDetails;
-    this.projectName = projectName;
+    
+    // parseISO(string in date format) => Date object
+    // trim(string) => string with whitespace removed from both ends
+    const _dueDate = parseISO(dueDate);
+    const _taskName = taskName;
+    const _taskDetails = taskDetails;
+    const _projectName = projectName.trim();
 
-    const getDueDate = () => dueDate;
+    const getDueDate = () => _dueDate;
 
-    const getTaskName = () => taskName;
+    const getTaskName = () => _taskName;
 
-    const getTaskDetails = () => taskDetails;
+    const getTaskDetails = () => _taskDetails;
 
-    const getProjectName = () => projectName;
+    const getProjectName = () => _projectName;
 
-    const editDueDate = (newDueDate) => dueDate = newDueDate;
+    const editDueDate = (newDueDate) => _dueDate = newDueDate;
 
-    const editTaskName = (newTaskName) => taskName = newTaskName;
+    const editTaskName = (newTaskName) => _taskName = newTaskName;
 
-    const editTaskDetails = (newTaskDetails) => taskDetails = newTaskDetails;
+    const editTaskDetails = (newTaskDetails) => _taskDetails = newTaskDetails;
 
-    const editProjectName = (newProjectName) => projectName = newProjectName;
+    const editProjectName = (newProjectName) => _projectName = newProjectName;
 
     return {getDueDate, getTaskName, getProjectName, 
         getTaskDetails,editDueDate, 
@@ -55,7 +59,52 @@ const createListObject = () => {
     const taskDetails = GlobalNodes.taskDetailsGUI.value;
     const projectName = GlobalNodes.taskProjectNameGUI.value;
     const listItem = MakeListItem(taskDate, taskName, taskDetails, projectName);
+    
+    return listItem;
 }
+
+const updateProjectContainer = (listItem, projectName) => {
+    if (SectionContainers.projectsContainer[projectName] === undefined) {
+        SectionContainers.projectsContainer[projectName] = [listItem];
+    }
+    else {
+        SectionContainers.projectsContainer[projectName].push(listItem);
+    }
+}
+
+const addToContainers = (listItem) => {
+    const dueDate = listItem.getDueDate();
+    const projectName = listItem.getProjectName();
+
+    if (isToday(dueDate)) {
+        SectionContainers.todayContainer.push(listItem);
+        SectionContainers.weekContainer.push(listItem);
+    }
+    else if (isThisWeek(dueDate)) {
+        SectionContainers.weekContainer.push(listItem);
+    }
+    
+    if (projectName !== '') {
+        updateProjectContainer(listItem, projectName);
+    }
+
+    SectionContainers.homeContainer.push(listItem);
+}
+
+const addListToGUI = () => {
+    const listItem = createListObject();
+    addToContainers(listItem);
+}
+
+const SectionContainers = (function() {
+    const homeContainer = [];
+    const todayContainer = [];
+    const weekContainer = [];
+    const projectsContainer = {};
+
+    return {homeContainer, todayContainer,
+         weekContainer, projectsContainer};
+})();
 
 const GlobalNodes = (function() {
     const addTaskGUI = document.querySelector('.addTask-container');
@@ -72,7 +121,7 @@ const GlobalNodes = (function() {
     cancelFormGUI.addEventListener('click', hideForm);
 
     const submitFormGUI = document.querySelector('#checkmarkIcon');
-    submitFormGUI.addEventListener('click', createListObject)
+    submitFormGUI.addEventListener('click', addListToGUI)
     formGUI.remove();
     // end of form elements
 
@@ -81,6 +130,8 @@ const GlobalNodes = (function() {
     return {addTaskGUI, formGUI, mainContentGUI, 
         taskTitleGUI, taskDetailsGUI, taskDateGUI, taskProjectNameGUI};
 })();
+
+
 
 
 
