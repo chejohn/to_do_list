@@ -3,9 +3,7 @@ import {isToday, parseISO, isThisWeek} from 'date-fns';
 
 const MakeListItem = (dueDate, taskName, taskDetails, projectName) => {
     
-    // parseISO(string in date format) => Date object
-    // trim(string) => string with whitespace removed from both ends
-    const _dueDate = parseISO(dueDate);
+    const _dueDate = dueDate;
     const _taskName = taskName;
     const _taskDetails = taskDetails;
     const _projectName = projectName.trim();
@@ -37,8 +35,8 @@ const showForm = () => {
 }
 
 const hideForm = () => {
-    GlobalNodes.formGUI.remove();
     clearForm();
+    GlobalNodes.formGUI.remove();
     showAddTaskGUI();
 }
 
@@ -73,7 +71,9 @@ const updateProjectContainer = (listItem, projectName) => {
 }
 
 const addToContainers = (listItem) => {
-    const dueDate = listItem.getDueDate();
+    // parseISO(string in date format) => Date object
+    // trim(string) => string with whitespace removed from both ends
+    const dueDate = parseISO(listItem.getDueDate());
     const projectName = listItem.getProjectName();
 
     if (isToday(dueDate)) {
@@ -91,9 +91,60 @@ const addToContainers = (listItem) => {
     SectionContainers.homeContainer.push(listItem);
 }
 
+const createListItemGUI = (listItem) => {
+    // cloneNode(deep = true) => deep copy (including a copy of the node's tree) 
+    // of node object
+    const listItemGUICopy = GlobalNodes.listItemGUI.cloneNode(true);
+    
+    //Node.children => child elements excluding non-element nodes
+    const listTaskNameGUI = listItemGUICopy.children[0].children[1];
+    listTaskNameGUI.textContent = listItem.getTaskName();
+    const listItemDateGUI = listItemGUICopy.children[1].children[0];
+    listItemDateGUI.textContent = listItem.getDueDate();
+
+    // adding event listeners to list node
+    const checkboxGUI = listItemGUICopy.children[0].children[0];
+    checkboxGUI.addEventListener('click', crossOutTask);
+    // end of adding event listeners to list node
+
+    return listItemGUICopy;
+}
+
+const crossOutTask = (e) => {
+    const listItemGUICopy = e.target.parentNode.parentNode;
+    listItemGUICopy.classList.toggle('checked-list-item');
+}
+
 const addListToGUI = () => {
     const listItem = createListObject();
     addToContainers(listItem);
+    const listItemGUICopy = createListItemGUI(listItem);
+
+    GlobalNodes.mainContentGUI.appendChild(listItemGUICopy);
+    hideForm();
+    return listItem;
+}
+
+const updateGUI = () => {
+    const listItem = addListToGUI();
+    addProjectTabGUI(listItem);
+}
+
+const addProjectTabGUI = (listItem) => {
+    // const listItemProjectName = listItem.getProjectName();
+    // if (listItemProjectName === '') return;
+
+    // const projectCount = SectionContainers.projectsContainer[listItemProjectName].length;
+    // if (projectCount > 1) {
+    //     const projectCountGUI = projectTabGUICopy.children[0];
+    // }
+
+    // const projectNameGUI = projectTabGUICopy.children[1];
+
+    // projectNameGUI.textContent = listItemProjectName;
+    // projectCountGUI.textContent = projectCount;
+
+    // GlobalNodes.projectContainerGUI.appendChild(projectTabGUICopy);
 }
 
 const SectionContainers = (function() {
@@ -121,14 +172,22 @@ const GlobalNodes = (function() {
     cancelFormGUI.addEventListener('click', hideForm);
 
     const submitFormGUI = document.querySelector('#checkmarkIcon');
-    submitFormGUI.addEventListener('click', addListToGUI)
+    submitFormGUI.addEventListener('click', updateGUI)
     formGUI.remove();
     // end of form elements
+
+    const listItemGUI = document.querySelector('.list-item');
+    listItemGUI.remove();
+
+    const projectContainerGUI = document.querySelector('#project-container');
+    const projectTabGUI = document.querySelector('.projects');
+    projectTabGUI.remove();
 
     const mainContentGUI = document.querySelector('#main-content');
 
     return {addTaskGUI, formGUI, mainContentGUI, 
-        taskTitleGUI, taskDetailsGUI, taskDateGUI, taskProjectNameGUI};
+        taskTitleGUI, taskDetailsGUI, taskDateGUI, 
+        taskProjectNameGUI, listItemGUI, projectTabGUI, projectContainerGUI};
 })();
 
 

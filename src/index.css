@@ -88,7 +88,7 @@ button:hover {transform: scale(1.1);}
 
 #project-container {
     height: 200px;
-    overflow: scroll;
+    overflow: auto;
     font-size: 18px;
     margin-top: 5px;
     margin-left: 20px;
