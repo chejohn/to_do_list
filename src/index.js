@@ -9,6 +9,8 @@ const MakeListItem = (dueDate, taskName, taskDetails, projectName) => {
     let _taskName = taskName;
     let _taskDetails = taskDetails;
     let _projectName = projectName.trim();
+    let _uniqueID = GlobalVars.uniqueID++;
+    let _previousProjectName;
 
     const getDueDate = () => _dueDate;
 
@@ -18,272 +20,525 @@ const MakeListItem = (dueDate, taskName, taskDetails, projectName) => {
 
     const getProjectName = () => _projectName;
 
+    const getID = () => _uniqueID;
+
     const editDueDate = (newDueDate) => _dueDate = newDueDate;
 
     const editTaskName = (newTaskName) => _taskName = newTaskName;
 
     const editTaskDetails = (newTaskDetails) => _taskDetails = newTaskDetails;
 
-    const editProjectName = (newProjectName) => _projectName = newProjectName.trim();
+    const editProjectName = (newProjectName) => {
+        _previousProjectName = _projectName;
+        _projectName = newProjectName.trim();
+    }
+
+    const getLastProjectName = () => {
+        return _previousProjectName;
+    }
 
     return {getDueDate, getTaskName, getProjectName, 
         getTaskDetails,editDueDate, 
-        editTaskDetails, editTaskName, editProjectName};
+        editTaskDetails, editTaskName, editProjectName, getID, getLastProjectName};
 }
 
-const showForm = (e) => {
-    const currentNode = e.target;
-    const formGUICopy = GlobalNodes.formGUI.cloneNode(true);
+const retrieveListObject = (guiComponent) => {
+    const listIndex = guiComponent.getAttribute('data-id');
+    const listObject = SectionContainers.homeContainer[listIndex];
+    return listObject;
+}
 
-    if (currentNode.id === 'addTask-text' || 
-    currentNode.className === 'addTask-container' || currentNode.id === 'addTask-bttn') {
-        GlobalNodes.addTaskGUI.remove();
-        GlobalNodes.mainContentGUI.appendChild(formGUICopy);
-    }
-
-    else if (e.target.id === 'edit') {
-       const listItemGUI = currentNode.parentNode.parentNode;
-       const listIndex = listItemGUI.getAttribute('data-id');
-       const nextSiblingGUI = listItemGUI.nextSibling;
-       listItemGUI.remove();
-       
-       formGUICopy.className = 'editTask-form';
-       formGUICopy.setAttribute('data-id', `${listIndex}`);
-       accessEditFormFields(formGUICopy, e);
-       GlobalNodes.mainContentGUI.insertBefore(formGUICopy, nextSiblingGUI);
+const displayHomeList = () => {
+    for (const list of GlobalVars.mainContentGUI.children) {
+        if (list.className === 'addTask-container') break;
+        list.style.display = 'flex';
     }
 }
 
-const accessEditFormFields = (formGUI, e) => {
-    const taskTitleGUI = formGUI.children[0].children[0];
-    const taskDetailsGUI = formGUI.children[0].children[1];
-    const taskDateGUI = formGUI.children[0].children[2].children[0];
-    const taskProjectNameGUI = formGUI.children[0].children[2].children[1];
-
-    const listIndex = formGUI.getAttribute('data-id');
-    const listItem = SectionContainers.homeContainer[listIndex];
-    
-    if (e.target.id === 'edit') {
-        taskTitleGUI.value = listItem.getTaskName();
-        taskDetailsGUI.value = listItem.getTaskDetails();
-        taskDateGUI.value = listItem.getDueDate();
-        taskProjectNameGUI.value = listItem.getProjectName();
-    }
-    else if (e.target.id === 'checkmarkIcon') {
-        // update instance variables
-        const oldProjectName = listItem.getProjectName();
-        listItem.editTaskName(taskTitleGUI.value);
-        listItem.editTaskDetails(taskDetailsGUI.value);
-        listItem.editDueDate(taskDateGUI.value);
-        listItem.editProjectName(taskProjectNameGUI.value);
-
-        return {listItem, oldProjectName};
+const displayTodayList = () => {
+    for (const list of GlobalVars.mainContentGUI.children) {
+        if (list.className === 'addTask-container') break;
+        const listObject = retrieveListObject(list);
+        const dueDate = parseISO(listObject.getDueDate());
+        if (!isToday(dueDate)) {
+            list.style.display = 'none';
+        }
+        else {
+            list.style.display = 'flex';
+        }
     }
 }
 
-const cancelForm = (e) => {
-    const formContainer = e.target.parentNode.parentNode;
-    if (formContainer.className !== 'editTask-form') {
-        showAddTaskGUI();
+const displayWeekList = () => {
+    for (const list of GlobalVars.mainContentGUI.children) {
+        if (list.className === 'addTask-container') break;
+        const listObject = retrieveListObject(list);
+        const dueDate = parseISO(listObject.getDueDate());
+        if (!isThisWeek(dueDate)) {
+            list.style.display = 'none';
+        }
+        else {
+            list.style.display = 'flex';
+        }
+    }
+}
+
+const displayProjectList = (e) => {
+    if (e.target.className !== 'projects' && e.target.className !== 'chore-count'
+    && e.target.className !== 'chore-name') return;
+
+    if (e.target.className === 'projects') {
+        var projectNameGUI = e.target.children[1].textContent;
+    }
+    else if (e.target.className === 'chore-count') {
+        projectNameGUI = e.target.nextElementSibling.textContent;
+    }
+
+    else if (e.target.className === 'chore-name') {
+        projectNameGUI = e.target.textContent;
+    }
+
+    for (const list of GlobalVars.mainContentGUI.children) {
+        if (list.className === 'addTask-container') break;
+        const listObject = retrieveListObject(list);
+        const projectName = listObject.getProjectName();
+        
+        if (projectName !== projectNameGUI) {
+            list.style.display = 'none';
+        }
+        else {
+            list.style.display = 'flex';
+        }
+    }
+}
+
+const switchTabs = (e) => {
+    const tabText = e.target.textContent;
+    if (tabText === 'Home') {
+        displayHomeList();
+    }
+    else if (tabText === 'Today') {
+        displayTodayList();
+    }
+    else if (tabText === 'Week') {
+        displayWeekList();
     }
     else {
-        const listIndex = formContainer.getAttribute('data-id');
-        const listItem = SectionContainers.homeContainer[listIndex];
-        const listItemGUI = createListItemGUI(listItem, e);
-        const nextSiblingGUI = e.target.parentNode.parentNode.nextSibling;
-        GlobalNodes.mainContentGUI.insertBefore(listItemGUI, nextSiblingGUI);
+        displayProjectList(e);
     }
-    formContainer.remove();
-}
-
-const showAddTaskGUI = () => {
-    GlobalNodes.mainContentGUI.appendChild(GlobalNodes.addTaskGUI);
-}
-
-const createListObject = (e) => {
-    // e.target is the submit bttn
-    const taskTitleGUI = e.target.parentNode.parentNode.children[0].children[0];
-    const taskDetailsGUI = e.target.parentNode.parentNode.children[0].children[1];
-    const taskDateGUI = e.target.parentNode.parentNode.children[0].children[2].children[0];
-    const taskProjectNameGUI = e.target.parentNode.parentNode.children[0].children[2].children[1];
-    
-    const taskDate = taskDateGUI.value;
-    const taskName = taskTitleGUI.value;
-    const taskDetails = taskDetailsGUI.value;
-    const projectName = taskProjectNameGUI.value;
-    const listItem = MakeListItem(taskDate, taskName, taskDetails, projectName);
-
-    return listItem;
-}
-
-const updateProjectContainer = (listItem, projectName) => {
-    const projectContainerObj = SectionContainers.projectsContainer;
-    if (!projectContainerObj.hasOwnProperty(projectName)) {
-        projectContainerObj[projectName] = [listItem];
-    }
-    else {
-        projectContainerObj[projectName].push(listItem);
-    }
-}
-
-const addToContainers = (listItem) => {
-    // parseISO(string in date format) => Date object
-    // trim(string) => string with whitespace removed from both ends
-    const dueDate = parseISO(listItem.getDueDate());
-    const projectName = listItem.getProjectName();
-
-    if (isToday(dueDate)) {
-        SectionContainers.todayContainer.push(listItem);
-        SectionContainers.weekContainer.push(listItem);
-    }
-    else if (isThisWeek(dueDate)) {
-        SectionContainers.weekContainer.push(listItem);
-    }
-    
-    if (projectName !== '') {
-        updateProjectContainer(listItem, projectName);
-    }
-
-    SectionContainers.homeContainer.push(listItem);
-}
-
-const createListItemGUI = (listItem, e) => {
-    // cloneNode(deep = true) => deep copy (including a copy of the node's tree) 
-    // of node object
-    const formContainerGUI = e.target.parentNode.parentNode;
-    const listItemGUICopy = GlobalNodes.listItemGUI.cloneNode(true);
-    
-    if (formContainerGUI.className === 'editTask-form') {
-        const listIndex = formContainerGUI.getAttribute('data-id');
-        listItemGUICopy.setAttribute('data-id', listIndex);
-    }
-    else {
-        listItemGUICopy.setAttribute('data-id', `${GlobalNodes.listCounter}`);
-        GlobalNodes.listCounter++;
-    }
-    
-    //Node.children => child elements excluding non-element nodes
-    const listTaskNameGUI = listItemGUICopy.children[0].children[1];
-    const listItemDateGUI = listItemGUICopy.children[1].children[0];
-    listTaskNameGUI.textContent = listItem.getTaskName();
-    listItemDateGUI.textContent = listItem.getDueDate();
-
-    return listItemGUICopy;
 }
 
 const manageListAPI = (e) => {
-    if (e.target.className === 'checkbox') {
-        crossOutTask(e);
-    }
-    else if (e.target.className === 'addTask-container' || 
-    e.target.id === 'addTask-text' || 
-    e.target.id === 'addTask-bttn' || e.target.id === 'edit') {
+    const formContainer = e.target.parentNode.parentNode;
+    if (e.target.className === 'addTask-container' || 
+    e.target.id === 'addTask-text' || e.target.id === 'addTask-bttn' || e.target.id === 'edit') {
         showForm(e);
-    }
-    else if (e.target.id === 'checkmarkIcon') {
-        updateGUI(e);
     }
     else if (e.target.id === 'cancelIcon') {
         cancelForm(e);
     }
-}
+    else if (e.target.id === 'checkmarkIcon') {
+        let listObject;
+        if (formContainer.className === 'addTask-form') {
+            listObject = createListObject(e);
 
-const crossOutTask = (e) => {
-    const checkBoxNode = e.target;
-    const listItemGUI = checkBoxNode.parentNode.parentNode;
-    listItemGUI.classList.toggle('checked-list-item');
-}
-
-const addNewListToGUI = (e) => {
-    const listItem = createListObject(e);
-    addToContainers(listItem);
-    const listItemGUI = createListItemGUI(listItem, e);
-
-    GlobalNodes.mainContentGUI.appendChild(listItemGUI);
-    cancelForm(e);
-    return listItem;
-}
-
-const editTaskGUI = (formGUI, e) => {
-    const ListComponents = accessEditFormFields(formGUI, e);
-    const listItem = ListComponents.listItem;
-    const listItemGUI = createListItemGUI(listItem, e);
-    const nextSiblingGUI = e.target.parentNode.parentNode.nextSibling;
-
-    formGUI.remove();
-    GlobalNodes.mainContentGUI.insertBefore(listItemGUI, nextSiblingGUI);
-    
-    return ListComponents;
-}
-
-const editProjectTabGUI = (ListComponents) => {
-    const oldProjectName = ListComponents.oldProjectName;
-    const newListItem = ListComponents.listItem;
-    const newProjectName = newListItem.getProjectName();
-
-    if (oldProjectName === '' && newProjectName === '') return;
-    
-    else if (oldProjectName === '') {
-        addProjectTabGUI(newListItem);
-    }
-    else {
-        const projectContainer = SectionContainers.projectsContainer[oldProjectName];
-        for (const listItem of projectContainer) {
-            if (listItem.getProjectName() !== oldProjectName) {
-                const listIndex = projectContainer.indexOf(listItem, 0);
-                projectContainer.splice(listIndex, 1);
-                addProjectTabGUI(newListItem);
-                return;
-            }
         }
+        else if (formContainer.className === 'editTask-form') {
+            listObject = editListObject(e);
+        }
+        const listGUI = createListGUI(e, listObject);
+        appendListGUI(e, listGUI);
+        updateSectionContainers(e, listObject);
+        updateProjectTabsGUI(e, listObject);
+    }
+    else if (e.target.className === 'checkbox') {
+        strikeOutList(e);
+    }
+    else if (e.target.id === 'trash') {
+        const listGUI = e.target.parentNode.parentNode;
+        const listIndex = listGUI.getAttribute('data-id');
+        const listObject = SectionContainers.homeContainer[listIndex];
+        updateSectionContainers(e, listObject);
+        updateProjectTabsGUI(e, listObject);
+        deleteListGUI(listGUI);
+        changeGUIDataIDs(e);
     }
 }
 
-const updateGUI = (e) => {
-    const formGUI = e.target.parentNode.parentNode;
-    if (formGUI.getAttribute('class') === 'editTask-form') {
-        const ListComponents = editTaskGUI(formGUI, e);
-        editProjectTabGUI(ListComponents);
-    } 
-    else {
-        const listItem = addNewListToGUI(e);
-        addProjectTabGUI(listItem);
+const changeGUIDataIDs = (e) => {
+    GlobalVars.listCounter--;
+    let counter = 0;
+    for (const listGUI of GlobalVars.mainContentGUI.children) {
+        listGUI.setAttribute('data-id', `${counter}`);
+        counter++;
     }
 }
 
-// updates the project count on the GUI
-const updateProjectCountGUI = (projectName) => {
-    for (const tabNodeGUI of GlobalNodes.projectContainerGUI.children) {
-        if (tabNodeGUI.children[1].textContent === projectName) {
-            const projectNameCount = SectionContainers.projectsContainer[projectName].length;
-            if (projectNameCount <= 0) {
-                tabNodeGUI.remove();
+const deleteListGUI = (listGUI) => {
+    listGUI.remove();
+}
+
+const appendListGUI = (e, listGUI) => {
+    const formContainer = e.target.parentNode.parentNode;
+    if (formContainer.className === 'addTask-form') {
+        GlobalVars.mainContentGUI.appendChild(GlobalVars.addTaskGUI);
+        GlobalVars.mainContentGUI.insertBefore(listGUI, GlobalVars.addTaskGUI);
+    }
+    else if (formContainer.className === 'editTask-form') {
+        const nextSibling = formContainer.nextSibling;
+        GlobalVars.mainContentGUI.insertBefore(listGUI, nextSibling);
+    }
+    formContainer.remove();
+}
+
+const editListObject = (e) => {
+    const formContainer = e.target.parentNode.parentNode;
+
+    const listIndex = formContainer.getAttribute('data-id');
+    const listObject = SectionContainers.homeContainer[listIndex];
+    const formInfo = accessFormFields(e);
+
+    const taskTitle = formInfo.taskTitle;
+    const taskDetails = formInfo.taskDetails;
+    const taskProjectName = formInfo.taskProjectName;
+    const taskDueDate = formInfo.taskDate;
+
+    listObject.editDueDate(taskDueDate);
+    listObject.editTaskName(taskTitle);
+    listObject.editTaskDetails(taskDetails);
+    listObject.editProjectName(taskProjectName);
+    
+    return listObject;
+}
+
+const strikeOutList = (e) => {
+    const listGUI = e.target.parentNode.parentNode;
+    listGUI.classList.toggle('checked-list-item');
+}
+
+const showForm = (e) => {
+    const formGUICopy = GlobalVars.formGUI.cloneNode(true);
+    
+    if (e.target.className === 'addTask-container' || 
+    e.target.id === 'addTask-text' || e.target.id === 'addTask-bttn') {
+        formGUICopy.className = 'addTask-form'
+        GlobalVars.addTaskGUI.remove();
+        GlobalVars.mainContentGUI.appendChild(formGUICopy);
+    }
+    else if (e.target.id === 'edit') {
+        formGUICopy.className = 'editTask-form';
+
+        const listGUI = e.target.parentNode.parentNode;
+        const listObjectIndex = listGUI.getAttribute('data-id');
+        const listObject = SectionContainers.homeContainer[listObjectIndex];
+
+        const nextSiblingGUI = listGUI.nextSibling;
+        listGUI.remove();
+        prepareEditFormGUI(formGUICopy, listObject, listGUI);
+        GlobalVars.mainContentGUI.insertBefore(formGUICopy, nextSiblingGUI);
+    }
+}
+
+const prepareEditFormGUI = (formGUI, listObject, listGUI) => {
+    const formTitle = formGUI.children[0].children[0];
+    const formDetails = formGUI.children[0].children[1];
+    const formDate = formGUI.children[0].children[2].children[0];
+    const formProjectName = formGUI.children[0].children[2].children[1];
+
+    formTitle.value = listObject.getTaskName();
+    formDetails.value = listObject.getTaskDetails();
+    formDate.value = listObject.getDueDate();
+    formProjectName.value = listObject.getProjectName();
+
+    const listIndex = listGUI.getAttribute('data-id')
+    formGUI.setAttribute('data-id', listIndex);
+}
+
+const cancelForm = (e) => {
+    const formContainer = e.target.parentNode.parentNode;
+    if (formContainer.className === 'addTask-form') {
+        GlobalVars.mainContentGUI.appendChild(GlobalVars.addTaskGUI);
+    }
+    else if (formContainer.className === 'editTask-form') {
+        const nextSiblingNode = formContainer.nextSibling;
+        const listIndex = formContainer.getAttribute('data-id');
+        const listObject = SectionContainers.homeContainer[listIndex];
+        const listGUI = createListGUI(e, listObject);
+        GlobalVars.mainContentGUI.insertBefore(listGUI, nextSiblingNode);
+    }
+    formContainer.remove();
+}
+
+const createListObject = (e) => {
+    const formInfo = accessFormFields(e);
+    const taskTitle = formInfo.taskTitle;
+    const taskDetails = formInfo.taskDetails;
+    const taskDate = formInfo.taskDate;
+    const taskProjectName = formInfo.taskProjectName;
+    const listObject = MakeListItem(taskDate, taskTitle, taskDetails, taskProjectName);
+    return listObject;
+}
+
+const accessFormFields = (e) => {
+    const formGUI = e.target.parentNode.parentNode.children[0];
+    const taskTitle = formGUI.children[0].value;
+    const taskDetails = formGUI.children[1].value;
+    const taskDate = formGUI.children[2].children[0].value;
+    const taskProjectName = formGUI.children[2].children[1].value;
+
+    return {taskTitle, taskDetails, taskDate, taskProjectName};
+}
+
+const updateSectionContainers = (e, listObject) => {
+    const formContainer = e.target.parentNode.parentNode;
+    const dueDate = parseISO(listObject.getDueDate());
+    const projectName = listObject.getProjectName();
+    const uniqueID = listObject.getID();
+
+    if (formContainer.className === 'addTask-form') {
+        SectionContainers.homeContainer.push(listObject);
+        
+        if (isToday(dueDate)) {
+            SectionContainers.todayContainer.push(listObject);
+        }
+        if (isThisWeek(dueDate)) {
+            SectionContainers.weekContainer.push(listObject);
+        }
+    
+        if (projectName !== '') {
+            if (!SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
+                SectionContainers.projectsContainer[projectName] = [listObject];
             }
             else {
-                tabNodeGUI.children[0].textContent = projectNameCount;
-                return;
-            }   
+                SectionContainers.projectsContainer[projectName].push(listObject);
+            }
+        }
+    }
+
+    else if (formContainer.className === 'editTask-form') {
+        if (isToday(dueDate)) {
+            let notInContainer = true;
+            for (const list of SectionContainers.todayContainer) {
+                if (list.getID() === uniqueID) {
+                    notInContainer = false;
+                    break;
+                }
+            }
+            if (notInContainer) {
+                SectionContainers.todayContainer.push(listObject);
+            }
+        }
+        else if (!isToday(dueDate)) {
+            let counter = 0;
+            for (const list of SectionContainers.todayContainer) {
+                if (list.getID() === uniqueID) {
+                    SectionContainers.todayContainer.splice(counter, 1);
+                    break;
+                }
+                counter++;
+            }
+        }
+
+        if (isThisWeek(dueDate)) {
+            let notInContainer = true;
+            for (const list of SectionContainers.weekContainer) {
+                if (list.getID() === uniqueID) {
+                    notInContainer = false;
+                    break;
+                }
+            }
+            if (notInContainer) {
+                SectionContainers.weekContainer.push(listObject);
+            }
+        }
+        else if (!isThisWeek(dueDate)) {
+            let counter = 0;
+            for (const list of SectionContainers.weekContainer) {
+                if (list.getID() === uniqueID) {
+                    SectionContainers.weekContainer.splice(counter, 1);
+                    break;
+                }
+                counter++;
+            }
+        }
+
+        const lastProjectName = listObject.getLastProjectName();
+        if (lastProjectName === '' && projectName !== '') {
+            if (SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
+                SectionContainers.projectsContainer[projectName].push(listObject);
+            }
+            else {
+                SectionContainers.projectsContainer[projectName] = [listObject];
+            }
+        }
+        else if (lastProjectName !== '') {
+            if (lastProjectName === projectName) return;
+            // lastProjectName !== projectName
+            else {
+                const oldContainer = SectionContainers.projectsContainer[lastProjectName];
+                let counter = 0;
+                for (const list of oldContainer) {
+                    if (list.getID() === uniqueID) {
+                        oldContainer.splice(counter, 1);
+                        if (oldContainer.length < 1) {
+                            delete SectionContainers.projectsContainer[lastProjectName];
+                        }
+                        break;
+                    }
+                    counter++;
+                }
+                if (SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
+                    SectionContainers.projectsContainer[projectName].push(listObject);
+                }
+                // key does not exist in dictionary
+                else if (projectName !== '') {
+                    SectionContainers.projectsContainer[projectName] = [listObject];
+                }
+            }
+        }
+    }
+    // else if the trash bttn is pressed
+    else {
+        const listGUI = e.target.parentNode.parentNode;
+        const listIndex = listGUI.getAttribute('data-id');
+        SectionContainers.homeContainer.splice(listIndex, 1);
+        
+        if (isToday(dueDate)) {
+            let counter = 0;
+            for (const list of SectionContainers.todayContainer) {
+                if (list.getID() === uniqueID) {
+                    SectionContainers.todayContainer.splice(counter, 1);
+                    break;
+                }
+                counter++
+            }
+        }
+
+        if (isThisWeek(dueDate)) {
+            let counter = 0;
+            for (const list of SectionContainers.weekContainer) {
+                if (list.getID() === uniqueID) {
+                    SectionContainers.weekContainer.splice(counter, 1);
+                    break;
+                }
+                counter++;
+            }
+        }
+
+        if (SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
+            let counter = 0;
+            for (const list of SectionContainers.projectsContainer[projectName]) {
+                if (list.getID() === uniqueID) {
+                    SectionContainers.projectsContainer[projectName].splice(counter, 1);
+                    if (SectionContainers.projectsContainer[projectName].length < 1) {
+                        delete SectionContainers.projectsContainer[projectName];
+                    }
+                    break;
+                }
+                counter++;
+            }
         }
     }
 }
 
-const addProjectTabGUI = (listItem) => {
-    const projectName = listItem.getProjectName();
-    if (projectName === '') return;
+const createListGUI = (e, listObject) => {
+    const formContainer = e.target.parentNode.parentNode;
 
-    if (!SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
-        const projectTabGUICopy = GlobalNodes.projectTabGUI.cloneNode(true);
-        const projectCountGUI = projectTabGUICopy.children[0];
-        const projectNameGUI = projectTabGUICopy.children[1];
+    const listGUICopy = GlobalVars.listGUI.cloneNode(true);
 
-        projectCountGUI.textContent = '1';
-        projectNameGUI.textContent = projectName;
-        GlobalNodes.projectContainerGUI.appendChild(projectTabGUICopy);
+    const taskTitle = listGUICopy.children[0].children[1];
+    const taskDueDate = listGUICopy.children[1].children[0];
+    taskTitle.textContent = listObject.getTaskName();
+    taskDueDate.textContent = listObject.getDueDate();
+
+    if (formContainer.className === 'addTask-form') {
+        listGUICopy.setAttribute('data-id', `${GlobalVars.listCounter}`);
+        GlobalVars.listCounter++;
     }
+    else if (formContainer.className === 'editTask-form') {
+        const listIndex = formContainer.getAttribute('data-id');
+        listGUICopy.setAttribute('data-id', listIndex);
+    }
+    return listGUICopy;
+}
 
-        // update number within tab
-    updateProjectContainer(listItem, projectName);
-    updateProjectCountGUI(projectName);
+const updateProjectTabsGUI = (e, listObject) => {
+    const formContainer = e.target.parentNode.parentNode;
+    const projectName = listObject.getProjectName();
+
+    if (formContainer.className === 'addTask-form') {
+        if (projectName === '') return;
+
+        if (SectionContainers.projectsContainer[projectName].length > 1) {
+            // iterate through tabs and increment project count
+            for (const tabGUI of GlobalVars.projectContainerGUI.children) {
+                if (tabGUI.children[1].textContent === projectName) {
+                    updateProjectCountGUI(tabGUI, projectName);
+                    return;
+                }
+            }
+        }
+        else {
+            createTabGUI(projectName);
+        }
+    }
+    else if (formContainer.className === 'editTask-form') {
+        const lastProjectName = listObject.getLastProjectName();
+
+        if (lastProjectName !== '' && lastProjectName !== projectName) {
+            for (const tab of GlobalVars.projectContainerGUI.children) {
+                if (tab.children[1].textContent === lastProjectName) {
+                    if (!SectionContainers.projectsContainer.hasOwnProperty(lastProjectName)) {
+                        tab.remove();
+                    }
+                    else {
+                        updateProjectCountGUI(tab, lastProjectName);
+                    }
+                    break;
+                }
+            }
+        }
+        if (lastProjectName === '' && projectName !== '' || (projectName !== '')) {
+            for (const tab of GlobalVars.projectContainerGUI.children) {
+                if (tab.children[1].textContent === projectName) {
+                    updateProjectCountGUI(tab, projectName);
+                    return;
+                }
+            }
+            // if (tab does not exist)
+            createTabGUI(projectName);
+        }
+    }
+    // delete bttn is pressed
+    else {
+        if (projectName !== '') {
+            for (const tab of GlobalVars.projectContainerGUI.children) {
+                if (tab.children[1].textContent === projectName) {
+                    if (!SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
+                        tab.remove();
+                    }
+                    else {
+                        tab.children[0].textContent = SectionContainers.projectsContainer[projectName].length;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+const createTabGUI = (projectName) => {
+            const projectTabGUICopy = GlobalVars.projectTabGUI.cloneNode(true);
+            const projectCountGUI = projectTabGUICopy.children[0];
+            const projectNameGUI = projectTabGUICopy.children[1];
+            projectCountGUI.textContent = '1';
+            projectNameGUI.textContent = projectName;
+            GlobalVars.projectContainerGUI.appendChild(projectTabGUICopy);
+}
+
+const updateProjectCountGUI = (tabGUI, projectName) => {
+    const projectCount = SectionContainers.projectsContainer[projectName].length;
+    tabGUI.children[0].textContent = projectCount;
 }
 
 const SectionContainers = (function() {
@@ -292,11 +547,11 @@ const SectionContainers = (function() {
     const weekContainer = [];
     const projectsContainer = {};
 
-    return {homeContainer, todayContainer,
-         weekContainer, projectsContainer};
+    return {homeContainer, todayContainer, weekContainer, projectsContainer}
 })();
 
-const GlobalNodes = (function() {
+const GlobalVars = (function() {
+    let uniqueID = -1;
     let listCounter = 0;
 
     const addTaskGUI = document.querySelector('.addTask-container');
@@ -304,8 +559,8 @@ const GlobalNodes = (function() {
     const formGUI = document.querySelector('#list-form-container');
     formGUI.remove();
 
-    const listItemGUI = document.querySelector('.list-item');
-    listItemGUI.remove();
+    const listGUI = document.querySelector('.list-item');
+    listGUI.remove();
 
     const projectContainerGUI = document.querySelector('#project-container');
     const projectTabGUI = document.querySelector('.projects');
@@ -314,8 +569,12 @@ const GlobalNodes = (function() {
     const mainContentGUI = document.querySelector('#main-content');
     mainContentGUI.addEventListener('click', manageListAPI);
 
+    const tabContainer = document.querySelector('#tab-container');
+    tabContainer.addEventListener('click', switchTabs);
+
     return {addTaskGUI, formGUI, mainContentGUI, 
-        listItemGUI, projectTabGUI, projectContainerGUI, listCounter};
+        listGUI, projectTabGUI, projectContainerGUI, 
+        listCounter, uniqueID};
 })();
 
 
