@@ -134,7 +134,8 @@ button:hover {transform: scale(1.1);}
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: 50px 1fr;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #task-header {
@@ -154,6 +155,10 @@ button:hover {transform: scale(1.1);}
     position: relative;
     top: 2px;
     margin-right: 60px;
+}
+
+.rotatedArrow {
+    transform: rotate(180deg);
 }
 
 #arrow {margin-left: 5px}
@@ -195,6 +200,7 @@ button:hover {transform: scale(1.1);}
     display: flex;
     justify-content: space-between;
     padding: 8px;
+    margin: -1px;
 }
 
 .list-item:hover #edit, .list-item:hover #trash {opacity: 0.5;}
@@ -230,6 +236,11 @@ button:hover {transform: scale(1.1);}
 }
 
 input, textarea {outline: none;}
+
+.validation-failed::placeholder {
+    color: red;
+    opacity: 0.5;
+}
 
 textarea {
     height: 60px;

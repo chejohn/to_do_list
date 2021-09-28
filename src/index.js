@@ -1,5 +1,5 @@
 
-import {isToday, parseISO, isThisWeek} from 'date-fns';
+import {isToday, parseISO, isThisWeek, format} from 'date-fns';
 
 "use strict";
 
@@ -126,6 +126,24 @@ const switchTabs = (e) => {
     else {
         displayProjectList(e);
     }
+    updateTaskHeader(e);
+}
+
+const updateTaskHeader = (e) => {
+    const taskHeaderName = GlobalVars.taskHeaderGUI.children[0];
+    
+    if (e.target.className === 'tab' && e.target.id === '') {
+        taskHeaderName.textContent = e.target.textContent;
+    }
+    else if (e.target.className === 'projects') {
+        taskHeaderName.textContent = e.target.children[1].textContent;
+    }
+    else if (e.target.className === 'chore-name') {
+        taskHeaderName.textContent = e.target.textContent;
+    }
+    else if (e.target.className === 'chore-count') {
+        taskHeaderName.textContent = e.target.nextElementSibling.textContent;
+    }
 }
 
 const manageListAPI = (e) => {
@@ -138,9 +156,11 @@ const manageListAPI = (e) => {
         cancelForm(e);
     }
     else if (e.target.id === 'checkmarkIcon') {
-        let listObject;
+        const validForm = validateForm(e);
+        if (!validForm) return;
+
         if (formContainer.className === 'addTask-form') {
-            listObject = createListObject(e);
+            var listObject = createListObject(e);
 
         }
         else if (formContainer.className === 'editTask-form') {
@@ -156,17 +176,60 @@ const manageListAPI = (e) => {
     }
     else if (e.target.id === 'trash') {
         const listGUI = e.target.parentNode.parentNode;
-        const listIndex = listGUI.getAttribute('data-id');
-        const listObject = SectionContainers.homeContainer[listIndex];
+        const listObject = retrieveListObject(listGUI);
         updateSectionContainers(e, listObject);
         updateProjectTabsGUI(e, listObject);
         deleteListGUI(listGUI);
         changeGUIDataIDs(e);
     }
+    else if (e.target.className === 'list-item') {
+        showContentSummary(e);
+    }
+}
+
+const validateForm = (e) => {
+    const taskTitleForm = e.target.parentNode.previousElementSibling.children[0];
+    if (taskTitleForm.value === '') {
+        taskTitleForm.classList.add('validation-failed');
+        taskTitleForm.placeholder = 'Must include a title';
+        return false;
+    }
+    return true;
+}
+
+const showContentSummary = (e) => {
+    const listGUI = e.target;
+    const summaryContainer = GlobalVars.summaryContainerGUI;
+    document.body.appendChild(summaryContainer);
+    const listObject = retrieveListObject(listGUI);
+
+    const taskTitleGUI = summaryContainer.children[0].children[0].children[0];
+    const taskDueDateGUI = summaryContainer.children[0].children[1].children[0];
+    const projectNameGUI = summaryContainer.children[0].children[1].children[1];
+    const summaryDetailsGUI = summaryContainer.children[0].children[1].children[3];
+
+    let dueDate = listObject.getDueDate();
+    if (dueDate !== '') {
+        dueDate = format(parseISO(dueDate), 'MM/dd/yyyy');
+    }
+    const projectName = listObject.getProjectName();
+    
+    taskTitleGUI.textContent = listObject.getTaskName();
+    taskDueDateGUI.textContent = `Due: ${dueDate}`;
+    projectNameGUI.textContent = `Project: ${projectName}`;
+    summaryDetailsGUI.textContent = listObject.getTaskDetails();
+}
+
+const closeSummaryContainer = (e) => {
+    if (e.target.className === 'close-popUp-icon') {
+        GlobalVars.summaryContainerGUI.remove();
+    }
 }
 
 const changeGUIDataIDs = (e) => {
-    GlobalVars.listCounter--;
+    if (e.target.id === 'trash') {
+        GlobalVars.listCounter--;
+    }
     let counter = 0;
     for (const listGUI of GlobalVars.mainContentGUI.children) {
         listGUI.setAttribute('data-id', `${counter}`);
@@ -194,8 +257,7 @@ const appendListGUI = (e, listGUI) => {
 const editListObject = (e) => {
     const formContainer = e.target.parentNode.parentNode;
 
-    const listIndex = formContainer.getAttribute('data-id');
-    const listObject = SectionContainers.homeContainer[listIndex];
+    const listObject = retrieveListObject(formContainer);
     const formInfo = accessFormFields(e);
 
     const taskTitle = formInfo.taskTitle;
@@ -261,8 +323,7 @@ const cancelForm = (e) => {
     }
     else if (formContainer.className === 'editTask-form') {
         const nextSiblingNode = formContainer.nextSibling;
-        const listIndex = formContainer.getAttribute('data-id');
-        const listObject = SectionContainers.homeContainer[listIndex];
+        const listObject = retrieveListObject(formContainer);
         const listGUI = createListGUI(e, listObject);
         GlobalVars.mainContentGUI.insertBefore(listGUI, nextSiblingNode);
     }
@@ -443,13 +504,20 @@ const updateSectionContainers = (e, listObject) => {
 
 const createListGUI = (e, listObject) => {
     const formContainer = e.target.parentNode.parentNode;
+    const dueDate = listObject.getDueDate();
 
     const listGUICopy = GlobalVars.listGUI.cloneNode(true);
 
     const taskTitle = listGUICopy.children[0].children[1];
     const taskDueDate = listGUICopy.children[1].children[0];
     taskTitle.textContent = listObject.getTaskName();
-    taskDueDate.textContent = listObject.getDueDate();
+    
+    if (dueDate !== '') {
+        taskDueDate.textContent = format(parseISO(dueDate), 'MM/dd/yyyy');
+    }
+    else {
+        taskDueDate.textContent = '';
+    }
 
     if (formContainer.className === 'addTask-form') {
         listGUICopy.setAttribute('data-id', `${GlobalVars.listCounter}`);
@@ -541,6 +609,66 @@ const updateProjectCountGUI = (tabGUI, projectName) => {
     tabGUI.children[0].textContent = projectCount;
 }
 
+const compareDatesAsc = (listComponent1, listComponent2) => {
+    
+    if (listComponent1 instanceof Element && 
+        listComponent2 instanceof Element) {
+        var date1 = listComponent1.children[1].children[0].textContent;
+        var date2 = listComponent2.children[1].children[0].textContent;
+    }
+    else {
+        date1 = listComponent1.getDueDate();
+        date2 = listComponent2.getDueDate();
+    }
+    
+    if (date1 < date2) return -1;
+    else if (date1 > date2) return 1;
+    return 0;
+}
+
+const compareDatesDesc = (listComponent1, listComponent2) => {
+    if (listComponent1 instanceof Element && 
+        listComponent2 instanceof Element) {
+        var date1 = listComponent1.children[1].children[0].textContent;
+        var date2 = listComponent2.children[1].children[0].textContent;
+    }
+    else {
+        date1 = listComponent1.getDueDate();
+        date2 = listComponent2.getDueDate();
+    }
+
+    if (date1 < date2) return 1;
+    else if (date1 > date2) return -1;
+    else return 0;
+}
+
+const sortList = (e) => {
+    const mainContentListGUI = GlobalVars.mainContentGUI.children;
+    const mainContentArr = [...mainContentListGUI];
+    mainContentArr.pop();
+
+    // rotate arrow on GUI
+    GlobalVars.arrowIcon.classList.toggle('rotatedArrow');
+
+    const homeContainerArr = SectionContainers.homeContainer;
+
+    GlobalVars.taskHeaderGUI.classList.toggle('descending');
+    
+    if (GlobalVars.taskHeaderGUI.className === 'descending') {
+        mainContentArr.sort(compareDatesDesc).forEach((node) => {
+            GlobalVars.mainContentGUI.insertBefore(node, GlobalVars.addTaskGUI);
+        });
+        homeContainerArr.sort(compareDatesDesc);
+    }
+    else {
+        mainContentArr.sort(compareDatesAsc).forEach((node) => {
+            GlobalVars.mainContentGUI.insertBefore(node, GlobalVars.addTaskGUI);
+        });
+        homeContainerArr.sort(compareDatesAsc);
+    }
+    changeGUIDataIDs(e);
+}
+
 const SectionContainers = (function() {
     const homeContainer = [];
     const todayContainer = [];
@@ -553,6 +681,15 @@ const SectionContainers = (function() {
 const GlobalVars = (function() {
     let uniqueID = -1;
     let listCounter = 0;
+
+    const summaryContainerGUI = document.querySelector('.summary-container');
+    summaryContainerGUI.addEventListener('click', closeSummaryContainer);
+    summaryContainerGUI.remove();
+
+    const arrowIcon = document.querySelector('#arrow');
+
+    const taskHeaderGUI = document.querySelector('#task-header');
+    taskHeaderGUI.addEventListener('click', sortList);
 
     const addTaskGUI = document.querySelector('.addTask-container');
     
@@ -574,7 +711,8 @@ const GlobalVars = (function() {
 
     return {addTaskGUI, formGUI, mainContentGUI, 
         listGUI, projectTabGUI, projectContainerGUI, 
-        listCounter, uniqueID};
+        listCounter, uniqueID, taskHeaderGUI, arrowIcon, 
+        summaryContainerGUI};
 })();
 
 
