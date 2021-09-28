@@ -1,5 +1,6 @@
 
-import {isToday, parseISO, isThisWeek, format} from 'date-fns';
+import {isToday, parseISO, isThisWeek, 
+    format, isBefore, endOfToday} from 'date-fns';
 
 "use strict";
 
@@ -504,7 +505,7 @@ const updateSectionContainers = (e, listObject) => {
 
 const createListGUI = (e, listObject) => {
     const formContainer = e.target.parentNode.parentNode;
-    const dueDate = listObject.getDueDate();
+    const dueDate = parseISO(listObject.getDueDate());
 
     const listGUICopy = GlobalVars.listGUI.cloneNode(true);
 
@@ -513,7 +514,10 @@ const createListGUI = (e, listObject) => {
     taskTitle.textContent = listObject.getTaskName();
     
     if (dueDate !== '') {
-        taskDueDate.textContent = format(parseISO(dueDate), 'MM/dd/yyyy');
+        taskDueDate.textContent = format(dueDate, 'MM/dd/yyyy');
+        if (isBefore(dueDate, endOfToday())) {
+            taskDueDate.style.color = 'red';
+        }
     }
     else {
         taskDueDate.textContent = '';
