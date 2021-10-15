@@ -3,52 +3,28 @@ import {
   format, isBefore, endOfToday,
 } from 'date-fns';
 
-const ListItem = (dueDate, taskName, taskDetails, projectName) => {
-  let _dueDate = dueDate;
-  let _taskName = taskName;
-  let _taskDetails = taskDetails;
-  let _projectName = projectName.trim();
-  const _uniqueID = GlobalVars.uniqueID++;
-  let _previousProjectName;
-
-  const getDueDate = () => _dueDate;
-
-  const getTaskName = () => _taskName;
-
-  const getTaskDetails = () => _taskDetails;
-
-  const getProjectName = () => _projectName;
-
-  const getID = () => _uniqueID;
-
-  const editDueDate = (newDueDate) => {
-    _dueDate = newDueDate;
-  };
-
-  const editTaskName = (newTaskName) => { _taskName = newTaskName; };
-
-  const editTaskDetails = (newTaskDetails) => { _taskDetails = newTaskDetails; };
-
-  const editProjectName = (newProjectName) => {
-    _previousProjectName = _projectName;
-    _projectName = newProjectName.trim();
-  };
-
-  const getLastProjectName = () => _previousProjectName;
-
-  return {
-    getDueDate,
-    getTaskName,
-    getProjectName,
-    getTaskDetails,
-    editDueDate,
-    editTaskDetails,
-    editTaskName,
-    editProjectName,
-    getID,
-    getLastProjectName,
-  };
+function ListItem(dueDate, taskName, taskDetails, projectName) {
+  this.dueDate = dueDate;
+  this.taskName = taskName;
+  this.taskDetails = taskDetails;
+  this.projectName = projectName;
+  this.uniqueID = GlobalVars.uniqueID++;
+  this.previousProjectName;
 };
+
+ListItem.prototype.getDueDate = function() {return this.dueDate};
+ListItem.prototype.getTaskName = function() {return this.taskName};
+ListItem.prototype.getTaskDetails = function() {return this.taskDetails};
+ListItem.prototype.getProjectName = function() {return this.projectName};
+ListItem.prototype.getID = function() {return this.uniqueID};
+ListItem.prototype.editDueDate = function(newDueDate) {this.dueDate = newDueDate};
+ListItem.prototype.editTaskName = function(newTaskName) {this.taskName = newTaskName};
+ListItem.prototype.editTaskDetails = function(newTaskDetails) {this.taskDetails = newTaskDetails;};
+ListItem.prototype.editProjectName = function(newProjectName) {
+  this.previousProjectName = this.projectName;
+  this.projectName = newProjectName.trim();
+};
+ListItem.prototype.getLastProjectName = function() {return this._previousProjectName};
 
 const retrieveListObject = (guiComponent) => {
   const listIndex = guiComponent.getAttribute('data-id');
@@ -126,7 +102,7 @@ const switchTabs = (e) => {
     displayProjectList(e);
   }
   updateTaskHeader(e);
-  // updateLocalStorage();
+  updateLocalStorage();
 };
 
 const updateTaskHeader = (e) => {
@@ -148,34 +124,42 @@ const manageListAPI = (e) => {
   if (e.target.className === 'addTask-container'
     || e.target.id === 'addTask-text' || e.target.id === 'addTask-bttn' || e.target.id === 'edit') {
     showForm(e);
-  } else if (e.target.id === 'cancelIcon') {
+  } 
+  else if (e.target.id === 'cancelIcon') {
     cancelForm(e);
-  } else if (e.target.id === 'checkmarkIcon') {
+  } 
+  else if (e.target.id === 'checkmarkIcon') {
     const validForm = validateForm(e);
     if (!validForm) return;
 
     if (formContainer.className === 'addTask-form') {
       var listObject = createListObject(e);
-    } else if (formContainer.className === 'editTask-form') {
+    } 
+    else if (formContainer.className === 'editTask-form') {
       listObject = editListObject(e);
     }
     const listGUI = createListGUI(e, listObject);
     appendListGUI(e, listGUI);
     updateSectionContainers(e, listObject);
     updateProjectTabsGUI(e, listObject);
-  } else if (e.target.className === 'checkbox') {
+    updateLocalStorage();
+  } 
+  else if (e.target.className === 'checkbox') {
     strikeOutList(e);
-  } else if (e.target.id === 'trash') {
+    updateLocalStorage();
+  } 
+  else if (e.target.id === 'trash') {
     const listGUI = e.target.parentNode.parentNode;
     const listObject = retrieveListObject(listGUI);
     updateSectionContainers(e, listObject);
     updateProjectTabsGUI(e, listObject);
     deleteListGUI(listGUI);
     changeGUIDataIDs(e);
-  } else if (e.target.className === 'list-item') {
+    updateLocalStorage();
+
+  } else if (e.target.className === 'list-item' || e.target.classList[0] === 'list-item') {
     showContentSummary(e);
   }
-  // updateLocalStorage();
 };
 
 const validateForm = (e) => {
@@ -203,7 +187,7 @@ const showContentSummary = (e) => {
   if (dueDate !== '') {
     dueDate = format(parseISO(dueDate), 'MM/dd/yyyy');
   }
-  const projectName = listObject.getProjectName();
+  const projectName = listObject.getProjectName().trim();
 
   taskTitleGUI.textContent = listObject.getTaskName();
   taskDueDateGUI.textContent = `Due: ${dueDate}`;
@@ -299,7 +283,7 @@ const prepareEditFormGUI = (formGUI, listObject, listGUI) => {
   formTitle.value = listObject.getTaskName();
   formDetails.value = listObject.getTaskDetails();
   formDate.value = listObject.getDueDate();
-  formProjectName.value = listObject.getProjectName();
+  formProjectName.value = listObject.getProjectName().trim();
 
   const listIndex = listGUI.getAttribute('data-id');
   formGUI.setAttribute('data-id', listIndex);
@@ -324,7 +308,7 @@ const createListObject = (e) => {
   const { taskDetails } = formInfo;
   const { taskDate } = formInfo;
   const { taskProjectName } = formInfo;
-  const listObject = ListItem(taskDate, taskTitle, taskDetails, taskProjectName);
+  const listObject = new ListItem(taskDate, taskTitle, taskDetails, taskProjectName);
   return listObject;
 };
 
@@ -343,7 +327,7 @@ const accessFormFields = (e) => {
 const updateSectionContainers = (e, listObject) => {
   const formContainer = e.target.parentNode.parentNode;
   const dueDate = parseISO(listObject.getDueDate());
-  const projectName = listObject.getProjectName();
+  const projectName = listObject.getProjectName().trim();
   const uniqueID = listObject.getID();
 
   if (formContainer.className === 'addTask-form') {
@@ -516,7 +500,7 @@ const createListGUI = (e, listObject) => {
 
 const updateProjectTabsGUI = (e, listObject) => {
   const formContainer = e.target.parentNode.parentNode;
-  const projectName = listObject.getProjectName();
+  const projectName = listObject.getProjectName().trim();
 
   if (formContainer.className === 'addTask-form') {
     if (projectName === '') return;
@@ -641,98 +625,92 @@ const sortList = (e) => {
     homeContainerArr.sort(compareDatesAsc);
   }
   changeGUIDataIDs(e);
-  // updateLocalStorage();
+  updateLocalStorage();
 };
 
-// const restoreSession = () => {
-//   if (localStorage.length <= 0) return;
+const manipulateSideBar = () => {
+  document.querySelector('.sidebar').classList.toggle('sidebar-selected');
+}
 
-//   SectionContainers.homeContainer = convertStringToObject(localStorage.getItem('homeContainer'));
-//   SectionContainers.todayContainer = convertStringToObject(localStorage.getItem('todayContainer'));
-//   SectionContainers.weekContainer = convertStringToObject(localStorage.getItem('weekContainer'));
-//   SectionContainers.projectsContainer = convertStringToObject(localStorage.getItem('projectsContainer'));
-//   GlobalVars.mainContentGUI.innerHTML = localStorage.getItem('mainContent');
-//   GlobalVars.taskHeaderGUI.innerHTML = localStorage.getItem('taskHeader');
-//   GlobalVars.tabContainerGUI.innerHTML = localStorage.getItem('tabContainer');
+const convertGenericObjs = (JSONobject) => {
+  const genericObjs = JSON.parse(JSONobject);
+  let listItemObjs;
+  if (genericObjs.constructor.name === 'Array') {
+    listItemObjs = genericObjs.map((genericObj) => {
+      return Object.assign(new ListItem(), genericObj);
+    });
+  }
+  // genericObjs has an Object constructor
+  else {
+    Object.keys(genericObjs).forEach((key) => {
+      genericObjs[key] = genericObjs[key].map((genericObj) => {
+        return Object.assign(new ListItem(), genericObj);
+      });
+    });
+    listItemObjs = genericObjs;
+  }
+  return listItemObjs;
+}
 
-//   GlobalVars.uniqueID = parseInt(localStorage.getItem('uniqueID'));
-//   GlobalVars.listCounter = parseInt(localStorage.getItem('listCounter'));
+const restoreCheckedStatus = () => {
+  for (const listItemGUI of GlobalVars.mainContentGUI.children) {
+    if (listItemGUI.className === 'addTask-container') break;
+    
+    if (listItemGUI.classList.length > 1) {
+      const inputCheckBox = listItemGUI.children[0].children[0];
+      inputCheckBox.checked = true;
+    }
+  }
+}
 
-//   GlobalVars.arrowIcon = document.querySelector('#arrow');
-//   GlobalVars.addTaskGUI = document.querySelector('.addTask-container');
-//   GlobalVars.projectContainerGUI = document.querySelector('#project-container');
-//   GlobalVars.formGUI = document.querySelector('#list-form-container');
-// };
+const updateLocalStorage = () => {
+  const homePageData = JSON.stringify(SectionContainers.homeContainer);
+  const todayPageData = JSON.stringify(SectionContainers.todayContainer);
+  const weekPageData = JSON.stringify(SectionContainers.weekContainer);
+  const projectsPageData = JSON.stringify(SectionContainers.projectsContainer);
+  
+  const uniqueIdData = GlobalVars.uniqueID;
+  const listCounterData = GlobalVars.listCounter;
+  const mainContainerData = GlobalVars.mainContentGUI.innerHTML;
+  const tabContainerData = GlobalVars.tabContainerGUI.innerHTML;
+  const taskHeaderData = GlobalVars.taskHeaderGUI.innerHTML;
 
-// const updateLocalStorage = () => {
-//   const mainContentHTML = GlobalVars.mainContentGUI.innerHTML;
-//   const taskHeaderHTML = GlobalVars.taskHeaderGUI.innerHTML;
-//   const tabContainerHTML = GlobalVars.tabContainerGUI.innerHTML;
+  localStorage.setItem('homePageData', homePageData);
+  localStorage.setItem('todayPageData', todayPageData);
+  localStorage.setItem('weekPageData', weekPageData);
+  localStorage.setItem('projectsPageData', projectsPageData);
+  localStorage.setItem('mainContainerData', mainContainerData);
+  localStorage.setItem('tabContainerData', tabContainerData);
+  localStorage.setItem('taskHeaderData', taskHeaderData);
+  localStorage.setItem('uniqueIdData', `${uniqueIdData}`);
+  localStorage.setItem('listCounterData', `${listCounterData}`);
+}
 
-//   const homeContainer = convertObjectToString(SectionContainers.homeContainer);
-//   const todayContainer = convertObjectToString(SectionContainers.todayContainer);
-//   const weekContainer = convertObjectToString(SectionContainers.weekContainer);
-//   const projectsContainer = convertObjectToString(SectionContainers.projectsContainer);
-//   const uniqueID = `${GlobalVars.uniqueID}`;
-//   const listCounter = `${GlobalVars.listCounter}`;
+const restorePage = () => {
+  if (localStorage.length < 1) return;
 
-//   localStorage.setItem('mainContent', mainContentHTML);
-//   localStorage.setItem('taskHeader', taskHeaderHTML);
-//   localStorage.setItem('tabContainer', tabContainerHTML);
-//   localStorage.setItem('homeContainer', homeContainer);
-//   localStorage.setItem('todayContainer', todayContainer);
-//   localStorage.setItem('weekContainer', weekContainer);
-//   localStorage.setItem('projectsContainer', projectsContainer);
-//   localStorage.setItem('uniqueID', uniqueID);
-//   localStorage.setItem('listCounter', listCounter);
-// };
+  GlobalVars.mainContentGUI.innerHTML = localStorage.getItem('mainContainerData');
+  GlobalVars.taskHeaderGUI.innerHTML = localStorage.getItem('taskHeaderData');
+  GlobalVars.tabContainerGUI.innerHTML = localStorage.getItem('tabContainerData');
+  GlobalVars.uniqueID = parseInt(localStorage.getItem('uniqueIdData'));
+  GlobalVars.listCounter = parseInt(localStorage.getItem('listCounterData'));
 
-// const convertObjectToString = (object) => {
-//   if (object.constructor.name === 'Array') {
-//     object.forEach((listObject) => {
-//       Object.keys(listObject).forEach((key) => {
-//         listObject[key] = listObject[key].toString();
-//       });
-//     });
-//   }
-//   // else this is an Object literal
-//   else {
-//     Object.keys(object).forEach((key) => {
-//       const arrayOfObjects = object[key];
-//       arrayOfObjects.forEach((listObject) => {
-//         Object.keys(listObject).forEach((key) => {
-//           listObject[key] = listObject[key].toString();
-//         });
-//       });
-//     });
-//   }
-//   const stringRep = JSON.stringify(object);
-//   return stringRep;
-// };
+  const homePageObjs = convertGenericObjs(localStorage.getItem('homePageData'));
+  const todayPageObjs = convertGenericObjs(localStorage.getItem('todayPageData'));
+  const weekPageObjs = convertGenericObjs(localStorage.getItem('weekPageData'));
+  const projectPageObjs = convertGenericObjs(localStorage.getItem('projectsPageData'));
 
-// const convertStringToObject = (string) => {
-//   const objectRep = JSON.parse(string);
+  SectionContainers.homeContainer = homePageObjs;
+  SectionContainers.todayContainer = todayPageObjs;
+  SectionContainers.weekContainer = weekPageObjs;
+  SectionContainers.projectsContainer = projectPageObjs;
 
-//   if (objectRep.constructor.name === 'Array') {
-//     objectRep.forEach((listObject) => {
-//       Object.keys(listObject).forEach((key) => {
-//         listObject[key] = eval(listObject[key]);
-//       });
-//     });
-//   }
-//   //this is an object literal
-//   else {
-//     Object.keys(objectRep).forEach((key) => {
-//       const arrayOfObjects = objectRep[key];
-//       arrayOfObjects.forEach((listObject) => {
-//         Object.keys(listObject).forEach((key) => {
-//           listObject[key] = eval(listObject[key]);
-//         });
-//       });
-//     });
-//   }
-//   return objectRep;
-// };
+  GlobalVars.arrowIcon = document.querySelector('#arrow');
+  GlobalVars.addTaskGUI = document.querySelector('.addTask-container');
+  GlobalVars.projectContainerGUI = document.querySelector('#project-container');
+  restoreCheckedStatus()
+}
+
 
 const SectionContainers = (function () {
   const homeContainer = [];
@@ -744,10 +722,6 @@ const SectionContainers = (function () {
     homeContainer, todayContainer, weekContainer, projectsContainer,
   };
 }());
-
-const manipulateSideBar = () => {
-  document.querySelector('.sidebar').classList.toggle('sidebar-selected');
-}
 
 const GlobalVars = (function () {
   const uniqueID = -1;
@@ -798,6 +772,6 @@ const GlobalVars = (function () {
   };
 }());
 
-// restoreSession();
-// localStorage.clear();
+restorePage()
+// localStorage.clear()
 
