@@ -1,6 +1,10 @@
 import {
-  isToday, parseISO, isThisWeek,
-  format, isBefore, endOfToday,
+  isToday,
+  parseISO,
+  isThisWeek,
+  format,
+  isBefore,
+  endOfToday,
 } from 'date-fns';
 
 function ListItem(dueDate, taskName, taskDetails, projectName) {
@@ -10,21 +14,39 @@ function ListItem(dueDate, taskName, taskDetails, projectName) {
   this.projectName = projectName;
   this.uniqueID = GlobalVars.uniqueID++;
   this.previousProjectName;
-};
+}
 
-ListItem.prototype.getDueDate = function() {return this.dueDate};
-ListItem.prototype.getTaskName = function() {return this.taskName};
-ListItem.prototype.getTaskDetails = function() {return this.taskDetails};
-ListItem.prototype.getProjectName = function() {return this.projectName};
-ListItem.prototype.getID = function() {return this.uniqueID};
-ListItem.prototype.editDueDate = function(newDueDate) {this.dueDate = newDueDate};
-ListItem.prototype.editTaskName = function(newTaskName) {this.taskName = newTaskName};
-ListItem.prototype.editTaskDetails = function(newTaskDetails) {this.taskDetails = newTaskDetails;};
-ListItem.prototype.editProjectName = function(newProjectName) {
+ListItem.prototype.getDueDate = function () {
+  return this.dueDate;
+};
+ListItem.prototype.getTaskName = function () {
+  return this.taskName;
+};
+ListItem.prototype.getTaskDetails = function () {
+  return this.taskDetails;
+};
+ListItem.prototype.getProjectName = function () {
+  return this.projectName;
+};
+ListItem.prototype.getID = function () {
+  return this.uniqueID;
+};
+ListItem.prototype.editDueDate = function (newDueDate) {
+  this.dueDate = newDueDate;
+};
+ListItem.prototype.editTaskName = function (newTaskName) {
+  this.taskName = newTaskName;
+};
+ListItem.prototype.editTaskDetails = function (newTaskDetails) {
+  this.taskDetails = newTaskDetails;
+};
+ListItem.prototype.editProjectName = function (newProjectName) {
   this.previousProjectName = this.projectName;
   this.projectName = newProjectName.trim();
 };
-ListItem.prototype.getLastProjectName = function() {return this._previousProjectName};
+ListItem.prototype.getLastProjectName = function () {
+  return this._previousProjectName;
+};
 
 const retrieveListObject = (guiComponent) => {
   const listIndex = guiComponent.getAttribute('data-id');
@@ -66,8 +88,12 @@ const displayWeekList = () => {
 };
 
 const displayProjectList = (e) => {
-  if (e.target.className !== 'projects' && e.target.className !== 'chore-count'
-    && e.target.className !== 'chore-name') return;
+  if (
+    e.target.className !== 'projects' &&
+    e.target.className !== 'chore-count' &&
+    e.target.className !== 'chore-name'
+  )
+    return;
 
   if (e.target.className === 'projects') {
     var projectNameGUI = e.target.children[1].textContent;
@@ -121,21 +147,22 @@ const updateTaskHeader = (e) => {
 
 const manageListAPI = (e) => {
   const formContainer = e.target.parentNode.parentNode;
-  if (e.target.className === 'addTask-container'
-    || e.target.id === 'addTask-text' || e.target.id === 'addTask-bttn' || e.target.id === 'edit') {
+  if (
+    e.target.className === 'addTask-container' ||
+    e.target.id === 'addTask-text' ||
+    e.target.id === 'addTask-bttn' ||
+    e.target.id === 'edit'
+  ) {
     showForm(e);
-  } 
-  else if (e.target.id === 'cancelIcon') {
+  } else if (e.target.id === 'cancelIcon') {
     cancelForm(e);
-  } 
-  else if (e.target.id === 'checkmarkIcon') {
+  } else if (e.target.id === 'checkmarkIcon') {
     const validForm = validateForm(e);
     if (!validForm) return;
 
     if (formContainer.className === 'addTask-form') {
       var listObject = createListObject(e);
-    } 
-    else if (formContainer.className === 'editTask-form') {
+    } else if (formContainer.className === 'editTask-form') {
       listObject = editListObject(e);
     }
     const listGUI = createListGUI(e, listObject);
@@ -143,12 +170,10 @@ const manageListAPI = (e) => {
     updateSectionContainers(e, listObject);
     updateProjectTabsGUI(e, listObject);
     updateLocalStorage();
-  } 
-  else if (e.target.className === 'checkbox') {
+  } else if (e.target.className === 'checkbox') {
     strikeOutList(e);
     updateLocalStorage();
-  } 
-  else if (e.target.id === 'trash') {
+  } else if (e.target.id === 'trash') {
     const listGUI = e.target.parentNode.parentNode;
     const listObject = retrieveListObject(listGUI);
     updateSectionContainers(e, listObject);
@@ -156,8 +181,10 @@ const manageListAPI = (e) => {
     deleteListGUI(listGUI);
     changeGUIDataIDs(e);
     updateLocalStorage();
-
-  } else if (e.target.className === 'list-item' || e.target.classList[0] === 'list-item') {
+  } else if (
+    e.target.className === 'list-item' ||
+    e.target.classList[0] === 'list-item'
+  ) {
     showContentSummary(e);
   }
 };
@@ -181,7 +208,8 @@ const showContentSummary = (e) => {
   const taskTitleGUI = summaryContainer.children[0].children[0].children[0];
   const taskDueDateGUI = summaryContainer.children[0].children[1].children[0];
   const projectNameGUI = summaryContainer.children[0].children[1].children[1];
-  const summaryDetailsGUI = summaryContainer.children[0].children[1].children[3];
+  const summaryDetailsGUI =
+    summaryContainer.children[0].children[1].children[3];
 
   let dueDate = listObject.getDueDate();
   if (dueDate !== '') {
@@ -256,8 +284,11 @@ const strikeOutList = (e) => {
 const showForm = (e) => {
   const formGUICopy = GlobalVars.formGUI.cloneNode(true);
 
-  if (e.target.className === 'addTask-container'
-    || e.target.id === 'addTask-text' || e.target.id === 'addTask-bttn') {
+  if (
+    e.target.className === 'addTask-container' ||
+    e.target.id === 'addTask-text' ||
+    e.target.id === 'addTask-bttn'
+  ) {
     formGUICopy.className = 'addTask-form';
     GlobalVars.addTaskGUI.remove();
     GlobalVars.mainContentGUI.appendChild(formGUICopy);
@@ -308,7 +339,12 @@ const createListObject = (e) => {
   const { taskDetails } = formInfo;
   const { taskDate } = formInfo;
   const { taskProjectName } = formInfo;
-  const listObject = new ListItem(taskDate, taskTitle, taskDetails, taskProjectName);
+  const listObject = new ListItem(
+    taskDate,
+    taskTitle,
+    taskDetails,
+    taskProjectName
+  );
   return listObject;
 };
 
@@ -320,7 +356,10 @@ const accessFormFields = (e) => {
   const taskProjectName = formGUI.children[2].children[1].value;
 
   return {
-    taskTitle, taskDetails, taskDate, taskProjectName,
+    taskTitle,
+    taskDetails,
+    taskDate,
+    taskProjectName,
   };
 };
 
@@ -522,7 +561,9 @@ const updateProjectTabsGUI = (e, listObject) => {
     if (lastProjectName !== '' && lastProjectName !== projectName) {
       for (const tab of GlobalVars.projectContainerGUI.children) {
         if (tab.children[1].textContent === lastProjectName) {
-          if (!SectionContainers.projectsContainer.hasOwnProperty(lastProjectName)) {
+          if (
+            !SectionContainers.projectsContainer.hasOwnProperty(lastProjectName)
+          ) {
             tab.remove();
           } else {
             updateProjectCountGUI(tab, lastProjectName);
@@ -531,7 +572,7 @@ const updateProjectTabsGUI = (e, listObject) => {
         }
       }
     }
-    if (lastProjectName === '' && projectName !== '' || (projectName !== '')) {
+    if ((lastProjectName === '' && projectName !== '') || projectName !== '') {
       for (const tab of GlobalVars.projectContainerGUI.children) {
         if (tab.children[1].textContent === projectName) {
           updateProjectCountGUI(tab, projectName);
@@ -549,7 +590,8 @@ const updateProjectTabsGUI = (e, listObject) => {
         if (!SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
           tab.remove();
         } else {
-          tab.children[0].textContent = SectionContainers.projectsContainer[projectName].length;
+          tab.children[0].textContent =
+            SectionContainers.projectsContainer[projectName].length;
         }
         break;
       }
@@ -572,8 +614,7 @@ const updateProjectCountGUI = (tabGUI, projectName) => {
 };
 
 const compareDatesAsc = (listComponent1, listComponent2) => {
-  if (listComponent1 instanceof Element
-        && listComponent2 instanceof Element) {
+  if (listComponent1 instanceof Element && listComponent2 instanceof Element) {
     var date1 = listComponent1.children[1].children[0].textContent;
     var date2 = listComponent2.children[1].children[0].textContent;
   } else {
@@ -587,8 +628,7 @@ const compareDatesAsc = (listComponent1, listComponent2) => {
 };
 
 const compareDatesDesc = (listComponent1, listComponent2) => {
-  if (listComponent1 instanceof Element
-        && listComponent2 instanceof Element) {
+  if (listComponent1 instanceof Element && listComponent2 instanceof Element) {
     var date1 = listComponent1.children[1].children[0].textContent;
     var date2 = listComponent2.children[1].children[0].textContent;
   } else {
@@ -630,45 +670,45 @@ const sortList = (e) => {
 
 const manipulateSideBar = () => {
   document.querySelector('.sidebar').classList.toggle('sidebar-selected');
-}
+};
 
 const convertGenericObjs = (JSONobject) => {
   const genericObjs = JSON.parse(JSONobject);
   let listItemObjs;
   if (genericObjs.constructor.name === 'Array') {
-    listItemObjs = genericObjs.map((genericObj) => {
-      return Object.assign(new ListItem(), genericObj);
-    });
+    listItemObjs = genericObjs.map((genericObj) =>
+      Object.assign(new ListItem(), genericObj)
+    );
   }
   // genericObjs has an Object constructor
   else {
     Object.keys(genericObjs).forEach((key) => {
-      genericObjs[key] = genericObjs[key].map((genericObj) => {
-        return Object.assign(new ListItem(), genericObj);
-      });
+      genericObjs[key] = genericObjs[key].map((genericObj) =>
+        Object.assign(new ListItem(), genericObj)
+      );
     });
     listItemObjs = genericObjs;
   }
   return listItemObjs;
-}
+};
 
 const restoreCheckedStatus = () => {
   for (const listItemGUI of GlobalVars.mainContentGUI.children) {
     if (listItemGUI.className === 'addTask-container') break;
-    
+
     if (listItemGUI.classList.length > 1) {
       const inputCheckBox = listItemGUI.children[0].children[0];
       inputCheckBox.checked = true;
     }
   }
-}
+};
 
 const updateLocalStorage = () => {
   const homePageData = JSON.stringify(SectionContainers.homeContainer);
   const todayPageData = JSON.stringify(SectionContainers.todayContainer);
   const weekPageData = JSON.stringify(SectionContainers.weekContainer);
   const projectsPageData = JSON.stringify(SectionContainers.projectsContainer);
-  
+
   const uniqueIdData = GlobalVars.uniqueID;
   const listCounterData = GlobalVars.listCounter;
   const mainContainerData = GlobalVars.mainContentGUI.innerHTML;
@@ -684,21 +724,27 @@ const updateLocalStorage = () => {
   localStorage.setItem('taskHeaderData', taskHeaderData);
   localStorage.setItem('uniqueIdData', `${uniqueIdData}`);
   localStorage.setItem('listCounterData', `${listCounterData}`);
-}
+};
 
 const restorePage = () => {
   if (localStorage.length < 1) return;
 
-  GlobalVars.mainContentGUI.innerHTML = localStorage.getItem('mainContainerData');
+  GlobalVars.mainContentGUI.innerHTML =
+    localStorage.getItem('mainContainerData');
   GlobalVars.taskHeaderGUI.innerHTML = localStorage.getItem('taskHeaderData');
-  GlobalVars.tabContainerGUI.innerHTML = localStorage.getItem('tabContainerData');
+  GlobalVars.tabContainerGUI.innerHTML =
+    localStorage.getItem('tabContainerData');
   GlobalVars.uniqueID = parseInt(localStorage.getItem('uniqueIdData'));
   GlobalVars.listCounter = parseInt(localStorage.getItem('listCounterData'));
 
   const homePageObjs = convertGenericObjs(localStorage.getItem('homePageData'));
-  const todayPageObjs = convertGenericObjs(localStorage.getItem('todayPageData'));
+  const todayPageObjs = convertGenericObjs(
+    localStorage.getItem('todayPageData')
+  );
   const weekPageObjs = convertGenericObjs(localStorage.getItem('weekPageData'));
-  const projectPageObjs = convertGenericObjs(localStorage.getItem('projectsPageData'));
+  const projectPageObjs = convertGenericObjs(
+    localStorage.getItem('projectsPageData')
+  );
 
   SectionContainers.homeContainer = homePageObjs;
   SectionContainers.todayContainer = todayPageObjs;
@@ -708,9 +754,8 @@ const restorePage = () => {
   GlobalVars.arrowIcon = document.querySelector('#arrow');
   GlobalVars.addTaskGUI = document.querySelector('.addTask-container');
   GlobalVars.projectContainerGUI = document.querySelector('#project-container');
-  restoreCheckedStatus()
-}
-
+  restoreCheckedStatus();
+};
 
 const SectionContainers = (function () {
   const homeContainer = [];
@@ -719,9 +764,12 @@ const SectionContainers = (function () {
   const projectsContainer = {};
 
   return {
-    homeContainer, todayContainer, weekContainer, projectsContainer,
+    homeContainer,
+    todayContainer,
+    weekContainer,
+    projectsContainer,
   };
-}());
+})();
 
 const GlobalVars = (function () {
   const uniqueID = -1;
@@ -751,7 +799,9 @@ const GlobalVars = (function () {
   const mainContentGUI = document.querySelector('#main-content');
   mainContentGUI.addEventListener('click', manageListAPI);
 
-  document.querySelector('.drop-down-container').addEventListener('click', manipulateSideBar);
+  document
+    .querySelector('.drop-down-container')
+    .addEventListener('click', manipulateSideBar);
 
   const tabContainerGUI = document.querySelector('#tab-container');
   tabContainerGUI.addEventListener('click', switchTabs);
@@ -770,8 +820,6 @@ const GlobalVars = (function () {
     summaryContainerGUI,
     tabContainerGUI,
   };
-}());
+})();
 
-restorePage()
-// localStorage.clear()
-
+restorePage();
