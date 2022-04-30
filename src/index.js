@@ -7,6 +7,16 @@ import {
   endOfToday,
 } from 'date-fns';
 
+import './index.css';
+import './images/addIcon.svg'
+import './images/arrowIcon.svg';
+import './images/cancelIcon.svg';
+import './images/checkmark.svg';
+import './images/closePopIcon.svg';
+import './images/cubeLogo.png';
+import './images/deleteIcon.svg';
+import './images/editIcon.svg';
+
 function ListItem(dueDate, taskName, taskDetails, projectName) {
   this.dueDate = dueDate;
   this.taskName = taskName;
@@ -45,7 +55,7 @@ ListItem.prototype.editProjectName = function (newProjectName) {
   this.projectName = newProjectName.trim();
 };
 ListItem.prototype.getLastProjectName = function () {
-  return this._previousProjectName;
+  return this.previousProjectName;
 };
 
 const retrieveListObject = (guiComponent) => {
@@ -430,7 +440,6 @@ const updateSectionContainers = (e, listObject) => {
         counter++;
       }
     }
-
     const lastProjectName = listObject.getLastProjectName();
     if (lastProjectName === '' && projectName !== '') {
       if (SectionContainers.projectsContainer.hasOwnProperty(projectName)) {
@@ -441,7 +450,6 @@ const updateSectionContainers = (e, listObject) => {
     } else if (lastProjectName !== '') {
       if (lastProjectName === projectName) return;
       // lastProjectName !== projectName
-
       const oldContainer = SectionContainers.projectsContainer[lastProjectName];
       let counter = 0;
       for (const list of oldContainer) {
